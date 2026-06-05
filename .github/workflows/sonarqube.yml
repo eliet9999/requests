@@ -4,14 +4,11 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
   sonarqube:
-    name: Test and SonarQube analysis
+    name: Test coverage and SonarQube analysis
     runs-on: ubuntu-latest
 
     steps:
@@ -25,15 +22,20 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install package and test tools
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
-          pip install pytest coverage pytest-cov
+          python -m pip install -e .
+          python -m pip install pytest pytest-cov coverage
 
-      - name: Run tests with coverage
+      - name: Run limited tests with coverage
         run: |
           pytest tests/test_structures.py --cov=src/requests --cov-report=xml:coverage.xml
+
+      - name: Check coverage report exists
+        run: |
+          ls -al
+          head -n 5 coverage.xml
 
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
